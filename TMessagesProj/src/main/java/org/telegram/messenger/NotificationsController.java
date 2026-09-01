@@ -2458,7 +2458,7 @@ public class NotificationsController extends BaseController implements Notificat
     }
 
     char[] spoilerChars = new char[] {
-        'в Њ', 'вЎў', 'вў‘', 'в Ё', 'в Ґ', 'в ®', 'вЎ‘'
+        '\u280C', '\u2862', '\u2891', '\u2828', '\u2825', '\u282E', '\u2851'
     };
 
     private String replaceSpoilers(MessageObject messageObject) {
