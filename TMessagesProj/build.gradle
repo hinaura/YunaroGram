@@ -240,7 +240,7 @@ android {
         }
     }
 
-    namespace 'org.yunaro.messenger'
+    namespace 'org.telegram.messenger'
 }
 
 
