@@ -1,0 +1,222 @@
+name: Build YunaroGram
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: build-yunarogram-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NDK_VERSION: "27.2.12479018"
+  ANDROID_SDK_VERSION: "35"
+  BUILD_TOOLS_VERSION: "35.0.0"
+
+jobs:
+  build:
+    name: Build signed APK (arm64-v8a)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@master
+        with:
+          root-reserve-mb: 1024
+          swap-size-mb: 4096
+          remove-dotnet: "true"
+          remove-haskell: "true"
+          remove-codeql: "true"
+          remove-docker-images: "true"
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          submodules: false
+
+      - name: Checkout submodules
+        shell: bash
+        run: |
+          set -euo pipefail
+          git submodule sync --recursive
+          git -c protocol.version=2 \
+            submodule update --init --recursive --depth=1
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Relocate Gradle cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          BIG_WORKSPACE="${GITHUB_WORKSPACE}/.ci"
+          mkdir -p "$BIG_WORKSPACE/gradle-home" "$BIG_WORKSPACE/tmp"
+          echo "GRADLE_USER_HOME=$BIG_WORKSPACE/gradle-home" >> "$GITHUB_ENV"
+          echo "TMPDIR=$BIG_WORKSPACE/tmp" >> "$GITHUB_ENV"
+
+      - name: Relocate Android SDK onto big volume
+        shell: bash
+        run: |
+          set -euo pipefail
+          OLD_SDK="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          NEW_SDK="$GITHUB_WORKSPACE/.android-sdk"
+          mkdir -p "$NEW_SDK"
+          sudo rsync -a --remove-source-files "$OLD_SDK"/ "$NEW_SDK"/
+          sudo rm -rf "$OLD_SDK"
+          echo "ANDROID_HOME=$NEW_SDK" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$NEW_SDK" >> "$GITHUB_ENV"
+          echo "$NEW_SDK/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+          echo "$NEW_SDK/platform-tools" >> "$GITHUB_PATH"
+
+      - name: Install Android SDK + NDK
+        shell: bash
+        run: |
+          set -euo pipefail
+          ANDROID_HOME="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          test -x "$SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" \
+            "platforms;android-${ANDROID_SDK_VERSION}" \
+            "build-tools;${BUILD_TOOLS_VERSION}" \
+            "platform-tools" \
+            "ndk;${NDK_VERSION}" \
+            "cmake;3.22.1"
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/${NDK_VERSION}" >> "$GITHUB_ENV"
+
+      - name: Restrict APK to arm64-v8a
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/restrict_abi.py <<'PY'
+          import re
+          from pathlib import Path
+
+          p = Path("TMessagesProj_App/build.gradle")
+          text = p.read_text()
+
+          pattern = re.compile(r'abiFilters\s+((?:"[^"]+"\s*,\s*)*"[^"]+")')
+
+          def repl(m):
+              return 'abiFilters "arm64-v8a"'
+
+          new_text, count = pattern.subn(repl, text)
+
+          if count == 0:
+              raise SystemExit("no abiFilters entries found in TMessagesProj_App/build.gradle")
+
+          p.write_text(new_text)
+          print(f"Restricted {count} abiFilters block(s) to arm64-v8a")
+          PY
+          python3 /tmp/restrict_abi.py
+
+      - name: Build Release APK (unsigned, native + java from source)
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./gradlew \
+            :TMessagesProj_App:assembleRelease \
+            -Pandroid.injected.build.abi=arm64-v8a \
+            --no-daemon \
+            --stacktrace \
+            --max-workers=2
+
+      - name: Decode keystore from secret
+        shell: bash
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          set -euo pipefail
+          mkdir -p .ci/signing
+          echo "$KEYSTORE_BASE64" | base64 -d > .ci/signing/release.keystore
+
+      - name: Sign APK with apksigner
+        shell: bash
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+
+          ANDROID_HOME="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          BUILD_TOOLS_DIR="$ANDROID_HOME/build-tools/${BUILD_TOOLS_VERSION}"
+          ZIPALIGN="$BUILD_TOOLS_DIR/zipalign"
+          APKSIGNER="$BUILD_TOOLS_DIR/apksigner"
+
+          UNSIGNED_APK="$(find TMessagesProj_App/build/outputs/apk -type f -name "*unsigned*.apk" | head -n 1)"
+          if [ -z "$UNSIGNED_APK" ]; then
+            UNSIGNED_APK="$(find TMessagesProj_App/build/outputs/apk -type f -name "*.apk" | head -n 1)"
+          fi
+
+          if [ -z "$UNSIGNED_APK" ]; then
+            echo "ERROR: no APK found to sign"
+            exit 1
+          fi
+
+          echo "Signing: $UNSIGNED_APK"
+
+          ALIGNED_APK="TMessagesProj_App/build/outputs/apk/YunaroGram-arm64-aligned.apk"
+          "$ZIPALIGN" -f -p 4 "$UNSIGNED_APK" "$ALIGNED_APK"
+
+          SIGNED_APK="TMessagesProj_App/build/outputs/apk/YunaroGram-arm64-release.apk"
+          "$APKSIGNER" sign \
+            --ks .ci/signing/release.keystore \
+            --ks-pass "pass:${KEYSTORE_PASSWORD}" \
+            --ks-key-alias "${KEY_ALIAS}" \
+            --key-pass "pass:${KEY_PASSWORD}" \
+            --out "$SIGNED_APK" \
+            "$ALIGNED_APK"
+
+          "$APKSIGNER" verify "$SIGNED_APK"
+
+          echo "SIGNED_APK_PATH=$SIGNED_APK" >> "$GITHUB_ENV"
+
+      - name: Cleanup keystore file
+        if: always()
+        shell: bash
+        run: |
+          rm -rf .ci/signing
+
+      - name: Verify native libraries inside APK
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          UNZIP_DIR="$(mktemp -d)"
+          unzip -q "$SIGNED_APK_PATH" 'lib/*' -d "$UNZIP_DIR" || true
+
+          if [ ! -d "$UNZIP_DIR/lib/arm64-v8a" ]; then
+            echo "ERROR: lib/arm64-v8a not found inside APK"
+            exit 1
+          fi
+
+          find "$UNZIP_DIR/lib/arm64-v8a" -type f -name "*.so" -print0 |
+            while IFS= read -r -d '' lib; do
+              file "$lib"
+              if ! file "$lib" | grep -q "ARM aarch64"; then
+                echo "ERROR: wrong architecture: $lib"
+                exit 1
+              fi
+            done
+
+      - name: Upload signed APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: YunaroGram-arm64-release-signed
+          path: ${{ env.SIGNED_APK_PATH }}
+          if-no-files-found: error
+          retention-days: 7
