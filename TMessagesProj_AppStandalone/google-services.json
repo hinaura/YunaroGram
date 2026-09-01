@@ -1,0 +1,29 @@
+﻿{
+  "project_info": {
+    "project_number": "256236744465",
+    "project_id": "yunarogram",
+    "storage_bucket": "yunarogram.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:256236744465:android:f9e3762f8c15f6ae0126b0",
+        "android_client_info": {
+          "package_name": "org.yunaro.messenger"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAaT0eFDNa2-LkaZ0U_lf-XIIq2fXv3uT8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

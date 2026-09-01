@@ -1,0 +1,29 @@
+.idea/
+.gradle/
+build/
+obj/
+*.iml
+local.properties
+TMessagesProj/.cxx/
+TMessagesProj/jniLibs/
+TMessagesProj/jniRes/
+**/.DS_Store
+TMessagesProj/afat/
+TMessagesProj_App/afat/
+TMessagesProj_AppHockeyApp/afat/
+TMessagesProj_AppStandalone/afat/
+TMessagesProj_AppHuawei/afat/
+TMessagesProj/jni/ffmpeg/build_android
+
+# Secret / signing keys
+*.keystore
+*.jks
+**/release.keystore
+gradle.properties.backup
+
+# Temporary / local source assets not meant for the repo (root only)
+/legacy_icons.zip
+/yandex.svg
+/YunaroGram.svg
+/icon_background.xml
+/icon_foreground.xml
