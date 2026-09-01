@@ -2,9 +2,6 @@ name: Build YunaroGram
 
 on:
   workflow_dispatch: {}
-  push:
-    branches:
-      - main
 
 concurrency:
   group: build-yunarogram-${{ github.ref }}
