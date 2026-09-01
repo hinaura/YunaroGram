@@ -120,81 +120,63 @@ jobs:
           PY
           python3 /tmp/restrict_abi.py
 
-      - name: Build Release APK (unsigned, native + java from source)
-        shell: bash
-        run: |
-          set -euo pipefail
-          ./gradlew \
-            :TMessagesProj_App:assembleRelease \
-            -Pandroid.injected.build.abi=arm64-v8a \
-            --no-daemon \
-            --stacktrace \
-            --max-workers=2
-
       - name: Decode keystore from secret
         shell: bash
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
           set -euo pipefail
-          mkdir -p .ci/signing
-          echo "$KEYSTORE_BASE64" | base64 -d > .ci/signing/release.keystore
+          mkdir -p TMessagesProj/config
+          echo "$KEYSTORE_BASE64" | base64 -d > TMessagesProj/config/release.keystore
+          test -s TMessagesProj/config/release.keystore
 
-      - name: Sign APK with apksigner
+      - name: Build Release APK (signed, native + java from source)
         shell: bash
         env:
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          RELEASE_STORE_PASSWORD_ENV: ${{ secrets.KEYSTORE_PASSWORD }}
+          RELEASE_KEY_ALIAS_ENV: ${{ secrets.KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD_ENV: ${{ secrets.KEY_PASSWORD }}
         run: |
           set -euo pipefail
-
-          ANDROID_HOME="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
-          BUILD_TOOLS_DIR="$ANDROID_HOME/build-tools/${BUILD_TOOLS_VERSION}"
-          ZIPALIGN="$BUILD_TOOLS_DIR/zipalign"
-          APKSIGNER="$BUILD_TOOLS_DIR/apksigner"
-
-          UNSIGNED_APK="$(find TMessagesProj_App/build/outputs/apk -type f -name "*unsigned*.apk" | head -n 1)"
-          if [ -z "$UNSIGNED_APK" ]; then
-            UNSIGNED_APK="$(find TMessagesProj_App/build/outputs/apk -type f -name "*.apk" | head -n 1)"
-          fi
-
-          if [ -z "$UNSIGNED_APK" ]; then
-            echo "ERROR: no APK found to sign"
-            exit 1
-          fi
-
-          echo "Signing: $UNSIGNED_APK"
-
-          ALIGNED_APK="TMessagesProj_App/build/outputs/apk/YunaroGram-arm64-aligned.apk"
-          "$ZIPALIGN" -f -p 4 "$UNSIGNED_APK" "$ALIGNED_APK"
-
-          SIGNED_APK="TMessagesProj_App/build/outputs/apk/YunaroGram-arm64-release.apk"
-          "$APKSIGNER" sign \
-            --ks .ci/signing/release.keystore \
-            --ks-pass "pass:${KEYSTORE_PASSWORD}" \
-            --ks-key-alias "${KEY_ALIAS}" \
-            --key-pass "pass:${KEY_PASSWORD}" \
-            --out "$SIGNED_APK" \
-            "$ALIGNED_APK"
-
-          "$APKSIGNER" verify "$SIGNED_APK"
-
-          echo "SIGNED_APK_PATH=$SIGNED_APK" >> "$GITHUB_ENV"
+          ./gradlew \
+            :TMessagesProj_App:assembleRelease \
+            -Pandroid.injected.build.abi=arm64-v8a \
+            -PRELEASE_STORE_PASSWORD="$RELEASE_STORE_PASSWORD_ENV" \
+            -PRELEASE_KEY_ALIAS="$RELEASE_KEY_ALIAS_ENV" \
+            -PRELEASE_KEY_PASSWORD="$RELEASE_KEY_PASSWORD_ENV" \
+            --no-daemon \
+            --stacktrace \
+            --max-workers=2
 
       - name: Cleanup keystore file
         if: always()
         shell: bash
         run: |
-          rm -rf .ci/signing
+          rm -f TMessagesProj/config/release.keystore
+
+      - name: Locate signed APK
+        id: locate
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="$(find TMessagesProj_App/build/outputs/apk -type f -name "*release*.apk" ! -iname "*unsigned*" | head -n 1)"
+          if [ -z "$APK" ]; then
+            echo "ERROR: signed release APK not found"
+            find TMessagesProj_App/build/outputs/apk -type f -name "*.apk" -print
+            exit 1
+          fi
+          echo "Using APK: $APK"
+          du -h "$APK"
+          echo "apk_path=$APK" >> "$GITHUB_OUTPUT"
 
       - name: Verify native libraries inside APK
         shell: bash
         run: |
           set -euo pipefail
+          APK="${{ steps.locate.outputs.apk_path }}"
 
           UNZIP_DIR="$(mktemp -d)"
-          unzip -q "$SIGNED_APK_PATH" 'lib/*' -d "$UNZIP_DIR" || true
+          unzip -q "$APK" 'lib/*' -d "$UNZIP_DIR" || true
 
           if [ ! -d "$UNZIP_DIR/lib/arm64-v8a" ]; then
             echo "ERROR: lib/arm64-v8a not found inside APK"
@@ -214,6 +196,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: YunaroGram-arm64-release-signed
-          path: ${{ env.SIGNED_APK_PATH }}
+          path: ${{ steps.locate.outputs.apk_path }}
           if-no-files-found: error
           retention-days: 7
