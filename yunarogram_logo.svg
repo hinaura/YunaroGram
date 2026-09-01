@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
+  <title>YunaroGram</title>
+
+  <defs>
+    <radialGradient id="bg" cx="42%" cy="36%" r="82%">
+      <stop offset="0" stop-color="#352438"/>
+      <stop offset="0.45" stop-color="#211725"/>
+      <stop offset="0.78" stop-color="#120E15"/>
+      <stop offset="1" stop-color="#08070B"/>
+    </radialGradient>
+
+    <linearGradient id="plane"
+      x1="55" y1="175"
+      x2="186" y2="70"
+      gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#A52279"/>
+      <stop offset="0.20" stop-color="#D92A91"/>
+      <stop offset="0.40" stop-color="#FF3FA8"/>
+      <stop offset="0.60" stop-color="#FF67BC"/>
+      <stop offset="0.80" stop-color="#D85FEA"/>
+      <stop offset="1" stop-color="#8965FF"/>
+    </linearGradient>
+  </defs>
+
+  <circle cx="120" cy="120" r="120" fill="url(#bg)"/>
+
+  <path
+    d="
+      M61 114.5
+      L179 70.5
+      C183.8 68.7 187.6 72.2 186 77
+      L155.6 166
+      C154.2 170.4 151.2 172.1 147.1 169.2
+      L107.9 140.5
+      L95.1 165.8
+      C93.3 169.3 89.2 167.9 89.7 164
+      L92.8 135.5
+      L63.5 126.5
+      C57.4 124.6 56.6 117.2 61 114.5
+      Z
+    "
+    fill="url(#plane)"
+  />
+</svg>
