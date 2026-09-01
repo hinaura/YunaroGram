@@ -4269,7 +4269,7 @@ public class NotificationsController extends BaseController implements Notificat
                     if (pushDialogs.size() == 1) {
                         detailText = UserObject.getFirstName(getUserConfig().getCurrentUser());
                     } else {
-                        detailText = UserObject.getFirstName(getUserConfig().getCurrentUser()) + "гѓ»";
+                        detailText = UserObject.getFirstName(getUserConfig().getCurrentUser()) + "・";
                     }
                 } else {
                     detailText = "";
@@ -5753,7 +5753,7 @@ public class NotificationsController extends BaseController implements Notificat
         }
         int index;
         if ((index = name.indexOf(' ')) >= 0) {
-            return name.substring(0, index) + (name.endsWith("вЂ¦") ? "вЂ¦" : "");
+            return name.substring(0, index) + (name.endsWith("…") ? "…" : "");
         }
         return name;
     }
@@ -5798,7 +5798,7 @@ public class NotificationsController extends BaseController implements Notificat
                 continue;
             }
             if (username.length() > 50) {
-                username = username.substring(0, 25) + "вЂ¦";
+                username = username.substring(0, 25) + "…";
             }
             names.add(username);
             if (avatar == null && user1 != null) {

@@ -268,27 +268,27 @@ public class ContactsController extends BaseController {
             reloadContactsStatuses();
         }
 
-        sectionsToReplace.put("ГЂ", "A");
-        sectionsToReplace.put("ГЃ", "A");
-        sectionsToReplace.put("Г„", "A");
-        sectionsToReplace.put("Г™", "U");
-        sectionsToReplace.put("Гљ", "U");
-        sectionsToReplace.put("Гњ", "U");
-        sectionsToReplace.put("ГЊ", "I");
-        sectionsToReplace.put("ГЌ", "I");
-        sectionsToReplace.put("ГЏ", "I");
-        sectionsToReplace.put("Г€", "E");
-        sectionsToReplace.put("Г‰", "E");
-        sectionsToReplace.put("ГЉ", "E");
-        sectionsToReplace.put("Г‹", "E");
-        sectionsToReplace.put("Г’", "O");
-        sectionsToReplace.put("Г“", "O");
-        sectionsToReplace.put("Г–", "O");
-        sectionsToReplace.put("Г‡", "C");
-        sectionsToReplace.put("Г‘", "N");
-        sectionsToReplace.put("Её", "Y");
-        sectionsToReplace.put("Гќ", "Y");
-        sectionsToReplace.put("Еў", "Y");
+        sectionsToReplace.put("À", "A");
+        sectionsToReplace.put("Á", "A");
+        sectionsToReplace.put("Ä", "A");
+        sectionsToReplace.put("Ù", "U");
+        sectionsToReplace.put("Ú", "U");
+        sectionsToReplace.put("Ü", "U");
+        sectionsToReplace.put("Ì", "I");
+        sectionsToReplace.put("Í", "I");
+        sectionsToReplace.put("Ï", "I");
+        sectionsToReplace.put("È", "E");
+        sectionsToReplace.put("É", "E");
+        sectionsToReplace.put("Ê", "E");
+        sectionsToReplace.put("Ë", "E");
+        sectionsToReplace.put("Ò", "O");
+        sectionsToReplace.put("Ó", "O");
+        sectionsToReplace.put("Ö", "O");
+        sectionsToReplace.put("Ç", "C");
+        sectionsToReplace.put("Ñ", "N");
+        sectionsToReplace.put("Ÿ", "Y");
+        sectionsToReplace.put("Ý", "Y");
+        sectionsToReplace.put("Ţ", "Y");
 
         if (instance == 0) {
             Utilities.globalQueue.postRunnable(() -> {
@@ -2298,7 +2298,7 @@ public class ContactsController extends BaseController {
 
         builder = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI);
         builder.withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, rawContactId);
-        builder.withValue(ContactsContract.Data.MIMETYPE, "vnd.android.cursor.item/vnd.org.telegram.messenger.android.profile");
+        builder.withValue(ContactsContract.Data.MIMETYPE, "vnd.android.cursor.item/vnd.org.yunaro.messenger.android.profile");
         builder.withValue(ContactsContract.Data.DATA1, user.id);
         builder.withValue(ContactsContract.Data.DATA2, "Telegram Profile");
         builder.withValue(ContactsContract.Data.DATA3, LocaleController.formatString("ContactShortcutMessage", R.string.ContactShortcutMessage, phoneOrName));
@@ -2307,7 +2307,7 @@ public class ContactsController extends BaseController {
 
         builder = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI);
         builder.withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, rawContactId);
-        builder.withValue(ContactsContract.Data.MIMETYPE, "vnd.android.cursor.item/vnd.org.telegram.messenger.android.call");
+        builder.withValue(ContactsContract.Data.MIMETYPE, "vnd.android.cursor.item/vnd.org.yunaro.messenger.android.call");
         builder.withValue(ContactsContract.Data.DATA1, user.id);
         builder.withValue(ContactsContract.Data.DATA2, "Telegram Voice Call");
         builder.withValue(ContactsContract.Data.DATA3, LocaleController.formatString("ContactShortcutVoiceCall", R.string.ContactShortcutVoiceCall, phoneOrName));
@@ -2316,7 +2316,7 @@ public class ContactsController extends BaseController {
 
         builder = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI);
         builder.withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, rawContactId);
-        builder.withValue(ContactsContract.Data.MIMETYPE, "vnd.android.cursor.item/vnd.org.telegram.messenger.android.call.video");
+        builder.withValue(ContactsContract.Data.MIMETYPE, "vnd.android.cursor.item/vnd.org.yunaro.messenger.android.call.video");
         builder.withValue(ContactsContract.Data.DATA1, user.id);
         builder.withValue(ContactsContract.Data.DATA2, "Telegram Video Call");
         builder.withValue(ContactsContract.Data.DATA3, LocaleController.formatString("ContactShortcutVideoCall", R.string.ContactShortcutVideoCall, phoneOrName));
@@ -3066,7 +3066,7 @@ public class ContactsController extends BaseController {
         if (LocaleController.nameDisplayOrder == 1) {
             if (firstName != null && firstName.length() > 0) {
                 if (maxLength > 0 && firstName.length() > maxLength + 2) {
-                    return firstName.substring(0, maxLength) + "вЂ¦";
+                    return firstName.substring(0, maxLength) + "…";
                 }
                 result.append(firstName);
                 if (lastName != null && lastName.length() > 0) {
@@ -3079,14 +3079,14 @@ public class ContactsController extends BaseController {
                 }
             } else if (lastName != null && lastName.length() > 0) {
                 if (maxLength > 0 && lastName.length() > maxLength + 2) {
-                    return lastName.substring(0, maxLength) + "вЂ¦";
+                    return lastName.substring(0, maxLength) + "…";
                 }
                 result.append(lastName);
             }
         } else {
             if (lastName != null && lastName.length() > 0) {
                 if (maxLength > 0 && lastName.length() > maxLength + 2) {
-                    return lastName.substring(0, maxLength) + "вЂ¦";
+                    return lastName.substring(0, maxLength) + "…";
                 }
                 result.append(lastName);
                 if (firstName != null && firstName.length() > 0) {
@@ -3099,7 +3099,7 @@ public class ContactsController extends BaseController {
                 }
             } else if (firstName != null && firstName.length() > 0) {
                 if (maxLength > 0 && firstName.length() > maxLength + 2) {
-                    return firstName.substring(0, maxLength) + "вЂ¦";
+                    return firstName.substring(0, maxLength) + "…";
                 }
                 result.append(firstName);
             }

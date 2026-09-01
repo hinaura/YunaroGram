@@ -2026,12 +2026,12 @@ public class MediaDataController extends BaseController {
                     request = req;
                 } else if (type == TYPE_GREETINGS) {
                     TLRPC.TL_messages_getStickers req = new TLRPC.TL_messages_getStickers();
-                    req.emoticon = "\uD83D\uDC4B" + Emoji.fixEmoji("в­ђ");
+                    req.emoticon = "\uD83D\uDC4B" + Emoji.fixEmoji("⭐");
                     req.hash = calcDocumentsHash(recentStickers[type]);
                     request = req;
                 } else if (type == TYPE_PREMIUM_STICKERS) {
                     TLRPC.TL_messages_getStickers req = new TLRPC.TL_messages_getStickers();
-                    req.emoticon = "\uD83D\uDCC2" + Emoji.fixEmoji("в­ђ");
+                    req.emoticon = "\uD83D\uDCC2" + Emoji.fixEmoji("⭐");
                     req.hash = calcDocumentsHash(recentStickers[type]);
                     request = req;
                 } else {
@@ -8592,7 +8592,7 @@ public class MediaDataController extends BaseController {
             return;
         }
         final TLRPC.TL_messages_getStickers req2 = new TLRPC.TL_messages_getStickers();
-        req2.emoticon = Emoji.fixEmoji("в­ђ") + Emoji.fixEmoji("в­ђ");
+        req2.emoticon = Emoji.fixEmoji("⭐") + Emoji.fixEmoji("⭐");
         req2.hash = 0;
         previewStickersLoading = true;
         ConnectionsManager.getInstance(currentAccount).sendRequest(req2, (response, error) -> AndroidUtilities.runOnUIThread(() -> {
