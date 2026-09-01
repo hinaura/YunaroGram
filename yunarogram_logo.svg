@@ -1,18 +1,56 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
-  <title>YunaroGram</title>
-
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640">
   <defs>
-    <radialGradient id="bg" cx="42%" cy="36%" r="82%">
-      <stop offset="0" stop-color="#352438"/>
-      <stop offset="0.45" stop-color="#211725"/>
-      <stop offset="0.78" stop-color="#120E15"/>
-      <stop offset="1" stop-color="#08070B"/>
+    <!-- Base background sampled from the original preview -->
+    <linearGradient id="base" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0D0B10"/>
+      <stop offset="1" stop-color="#09070B"/>
+    </linearGradient>
+
+    <!-- Soft magenta/purple glow rising from the bottom -->
+    <radialGradient id="glow" cx="50%" cy="100%" r="72%">
+      <stop offset="0" stop-color="#C53B9A" stop-opacity="0.22"/>
+      <stop offset="0.34" stop-color="#8B4BD0" stop-opacity="0.12"/>
+      <stop offset="0.7" stop-color="#5A3D79" stop-opacity="0.045"/>
+      <stop offset="1" stop-color="#0D0B10" stop-opacity="0"/>
     </radialGradient>
 
-    <linearGradient id="plane"
-      x1="55" y1="175"
-      x2="186" y2="70"
-      gradientUnits="userSpaceOnUse">
+    <linearGradient id="waveMain" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#8E2A78" stop-opacity="0"/>
+      <stop offset="0.18" stop-color="#D62C91" stop-opacity="0.22"/>
+      <stop offset="0.40" stop-color="#FF4EAF" stop-opacity="0.34"/>
+      <stop offset="0.62" stop-color="#B861E5" stop-opacity="0.26"/>
+      <stop offset="0.82" stop-color="#7652C7" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#7652C7" stop-opacity="0"/>
+    </linearGradient>
+
+    <linearGradient id="waveThin" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#B82B8E" stop-opacity="0"/>
+      <stop offset="0.22" stop-color="#EA3CA0" stop-opacity="0.18"/>
+      <stop offset="0.48" stop-color="#FF71C2" stop-opacity="0.28"/>
+      <stop offset="0.72" stop-color="#A967E2" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#7049B4" stop-opacity="0"/>
+    </linearGradient>
+
+    <filter id="blur36" x="-20%" y="-60%" width="140%" height="220%">
+      <feGaussianBlur stdDeviation="36"/>
+    </filter>
+
+    <filter id="blur18" x="-20%" y="-60%" width="140%" height="220%">
+      <feGaussianBlur stdDeviation="18"/>
+    </filter>
+
+    <filter id="blur8" x="-20%" y="-60%" width="140%" height="220%">
+      <feGaussianBlur stdDeviation="8"/>
+    </filter>
+
+    <linearGradient id="vignette" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#000" stop-opacity="0.05"/>
+      <stop offset="0.72" stop-color="#000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0.17"/>
+    </linearGradient>
+
+    <!-- Same logo treatment as the original preview -->
+    <linearGradient id="logoPlane" x1="55" y1="175" x2="186" y2="70" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#A52279"/>
       <stop offset="0.20" stop-color="#D92A91"/>
       <stop offset="0.40" stop-color="#FF3FA8"/>
@@ -20,25 +58,102 @@
       <stop offset="0.80" stop-color="#D85FEA"/>
       <stop offset="1" stop-color="#8965FF"/>
     </linearGradient>
+
+    <radialGradient id="logoBg" cx="42%" cy="36%" r="82%">
+      <stop offset="0" stop-color="#352438"/>
+      <stop offset="0.45" stop-color="#211725"/>
+      <stop offset="0.78" stop-color="#120E15"/>
+      <stop offset="1" stop-color="#08070B"/>
+    </radialGradient>
+
+    <filter id="logoGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="16"/>
+    </filter>
   </defs>
 
-  <circle cx="120" cy="120" r="120" fill="url(#bg)"/>
+  <rect width="1280" height="640" fill="url(#base)"/>
 
+  <!-- Broad atmospheric glow -->
+  <rect width="1280" height="640" fill="url(#glow)"/>
+
+  <!-- Large soft wave -->
   <path
-    d="
-      M61 114.5
-      L179 70.5
-      C183.8 68.7 187.6 72.2 186 77
-      L155.6 166
-      C154.2 170.4 151.2 172.1 147.1 169.2
-      L107.9 140.5
-      L95.1 165.8
-      C93.3 169.3 89.2 167.9 89.7 164
-      L92.8 135.5
-      L63.5 126.5
-      C57.4 124.6 56.6 117.2 61 114.5
-      Z
-    "
-    fill="url(#plane)"
-  />
+    d="M-80 605
+       C110 535 250 560 385 600
+       C540 646 655 630 785 573
+       C935 508 1050 515 1160 570
+       C1240 610 1310 612 1380 584
+       L1380 720 L-80 720 Z"
+    fill="url(#waveMain)"
+    filter="url(#blur36)"/>
+
+  <!-- Secondary offset wave -->
+  <path
+    d="M-80 632
+       C85 585 220 566 370 610
+       C525 656 670 648 808 603
+       C955 555 1068 554 1188 604
+       C1265 636 1325 638 1380 620
+       L1380 720 L-80 720 Z"
+    fill="url(#waveMain)"
+    opacity="0.72"
+    filter="url(#blur18)"/>
+
+  <!-- Narrow luminous ridge following the wave -->
+  <path
+    d="M-40 604
+       C115 548 255 570 386 610
+       C542 657 657 639 794 582
+       C932 525 1050 531 1168 582
+       C1250 617 1315 620 1360 600"
+    fill="none"
+    stroke="url(#waveThin)"
+    stroke-width="18"
+    stroke-linecap="round"
+    filter="url(#blur18)"/>
+
+  <!-- Subtle inner highlight -->
+  <path
+    d="M-20 620
+       C132 573 255 584 392 620
+       C535 657 666 648 800 600
+       C943 548 1058 553 1172 600
+       C1250 633 1308 634 1350 618"
+    fill="none"
+    stroke="url(#waveThin)"
+    stroke-width="7"
+    stroke-linecap="round"
+    filter="url(#blur8)"
+    opacity="0.8"/>
+
+  <!-- Centered logo -->
+  <g transform="translate(520,150)">
+    <circle cx="120" cy="120" r="120" fill="url(#logoBg)"/>
+    <circle cx="120" cy="120" r="120" fill="none" stroke="#A85A99" stroke-opacity="0.08"/>
+
+    <!-- very soft color halo, kept subtle so the background remains dark -->
+    <path
+      d="M61 114.5 L179 70.5 C183.8 68.7 187.6 72.2 186 77 L155.6 166
+         C154.2 170.4 151.2 172.1 147.1 169.2 L107.9 140.5 L95.1 165.8
+         C93.3 169.3 89.2 167.9 89.7 164 L92.8 135.5 L63.5 126.5
+         C57.4 124.6 56.6 117.2 61 114.5 Z"
+      fill="#E33B9E" opacity="0.12" filter="url(#logoGlow)"/>
+
+    <path
+      d="M61 114.5
+         L179 70.5
+         C183.8 68.7 187.6 72.2 186 77
+         L155.6 166
+         C154.2 170.4 151.2 172.1 147.1 169.2
+         L107.9 140.5
+         L95.1 165.8
+         C93.3 169.3 89.2 167.9 89.7 164
+         L92.8 135.5
+         L63.5 126.5
+         C57.4 124.6 56.6 117.2 61 114.5 Z"
+      fill="url(#logoPlane)"/>
+  </g>
+
+  <!-- Keep the corners and top close to the original dark treatment -->
+  <rect width="1280" height="640" fill="url(#vignette)"/>
 </svg>
