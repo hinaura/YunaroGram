@@ -160,29 +160,53 @@ jobs:
         run: |
           set -euo pipefail
 
-          # APK output location varies: some Telegram-based forks relocate
-          # subproject buildDir (e.g. root build.gradle sets
-          # project.buildDir = "${rootProject.buildDir}/${project.name}"),
-          # so don't assume TMessagesProj_App/build/... — search the whole
-          # workspace for any */outputs/apk/... path instead.
-          mapfile -d '' -t CANDIDATES < <(
-            find . -type f -path "*/outputs/apk/*.apk" \
-              -iname "*release*" ! -iname "*unsigned*" -print0
+          # APK output location varies between Gradle/AGP setups and even
+          # between "outputs/apk" (final, renamed) and "intermediates/apk"
+          # (pre-rename, but still fully signed) trees, and the filename
+          # itself may just be "app.apk" rather than containing "release".
+          # So: search the whole workspace for any *.apk under a path that
+          # contains "/apk/" and "release", and pick the best candidate.
+          mapfile -d '' -t ALL_APKS < <(
+            find . -type f -name "*.apk" -path "*/apk/*release*" -print0
           )
 
-          if [ "${#CANDIDATES[@]}" -eq 0 ]; then
+          if [ "${#ALL_APKS[@]}" -eq 0 ]; then
             echo "ERROR: signed release APK not found"
             echo "All .apk files found in workspace:"
             find . -type f -name "*.apk" -print
             exit 1
           fi
 
-          if [ "${#CANDIDATES[@]}" -gt 1 ]; then
-            echo "WARNING: multiple candidate APKs found, picking the first:"
-            printf '%s\n' "${CANDIDATES[@]}"
+          echo "Candidate APKs found:"
+          printf '%s\n' "${ALL_APKS[@]}"
+
+          # Drop unsigned/bundle variants; we want the plain "afat" release
+          # flavor (single flavor, not App Bundle, not SDK23 split).
+          APK=""
+          for f in "${ALL_APKS[@]}"; do
+            case "$f" in
+              *unsigned*|*bundle*|*Bundle*) continue ;;
+            esac
+            APK="$f"
+            break
+          done
+
+          # Fall back to any non-unsigned candidate if the strict filter
+          # above found nothing (e.g. naming differs from what we expect).
+          if [ -z "$APK" ]; then
+            for f in "${ALL_APKS[@]}"; do
+              case "$f" in
+                *unsigned*) continue ;;
+              esac
+              APK="$f"
+              break
+            done
           fi
 
-          APK="${CANDIDATES[0]}"
+          if [ -z "$APK" ]; then
+            echo "ERROR: no signed candidate among found APKs"
+            exit 1
+          fi
           echo "Using APK: $APK"
           du -h "$APK"
           echo "apk_path=$APK" >> "$GITHUB_OUTPUT"
