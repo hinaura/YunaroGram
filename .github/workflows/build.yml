@@ -138,9 +138,15 @@ jobs:
           RELEASE_KEY_PASSWORD_ENV: ${{ secrets.KEY_PASSWORD }}
         run: |
           set -euo pipefail
+          # NOTE: deliberately NOT passing -Pandroid.injected.build.abi here.
+          # That property is meant for Android Studio's fast-deploy
+          # (Instant Run / Apply Changes) and causes AGP to stamp
+          # android:testOnly="true" into the manifest, which makes the
+          # resulting APK fail to install with INSTALL_FAILED_TEST_ONLY.
+          # ABI restriction is already handled by patching abiFilters in
+          # build.gradle in the earlier "Restrict APK to arm64-v8a" step.
           ./gradlew \
             :TMessagesProj_App:assembleRelease \
-            -Pandroid.injected.build.abi=arm64-v8a \
             -PRELEASE_STORE_PASSWORD="$RELEASE_STORE_PASSWORD_ENV" \
             -PRELEASE_KEY_ALIAS="$RELEASE_KEY_ALIAS_ENV" \
             -PRELEASE_KEY_PASSWORD="$RELEASE_KEY_PASSWORD_ENV" \
